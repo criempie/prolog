@@ -41,50 +41,62 @@ existDigit(NUM, DIG) :-
 
 % Задача 3.
 
-fact(0, 1).
-fact(1, 1).
-fact(N, R) :-
-    fact(N1, R1),
-    N is N1 + 1,
-    R is R1 * N.
+
+factorial(0,1).
+factorial(N,F) :-
+    N #> 0,
+    factorial_(N, F, 1, 1).
+
+factorial_(N, F, N, F).
+factorial_(N, F, I, R) :-
+    I1 #= I + 1,
+    R1 #= R * I1,
+    factorial_(N, F, I1, R1). 
 
 % Задание 4а.
-
-insert(nil, E, tr(E, nil, nil)).
-insert(tr(X, L, R), E, tr(Y, LL, RR)) :-
-    E < X,
-    insert(L, E, U),
-    (Y, LL, RR) = (X, U, R).
-
-insert(tr(X, L, R), E, tr(Y, LL, RR)) :-
-    E > X,
-    insert(R, E, U),
-    (Y, LL, RR) = (X, L, U),
-    (Y, LL, RR) = (X, L, R).
+insert_(nil, I, tr(I, nil, nil)).
+insert_(tr(X, L, R), I, tr(Y, LL, RR)) :-
+    (   I < X
+    ->  insert(L, I, U),
+        (Y, LL, RR) = (X, U, R)
+    ;   I > X
+    ->  insert(R, I, U),
+        (Y, LL, RR) = (X, L, U)
+    ;   (Y, LL, RR) = (X, L, R)  
+    ).
 
 % Задание 4б.
 
 contains(tr(X, _, _), X).
-contains(tr(X, L, R), N) :-
-    contains(L, N);
-    contains(R, N).
+
+contains(tr(E, L, _), X) :-
+    integer(X),
+    X < E,
+    contains(L, X).
+
+contains(tr(E, _, R), X) :-
+    integer(X),
+    X > E,
+    contains(R, X).
+
+contains(tr(_, L, _), X) :-
+    var(X),
+    contains(L, X).
+
+contains(tr(_, _, R), X) :-
+    var(X),
+    contains(R, X).
 
 % Задание 4в.
+isSearchTree(Tree) :-
+    current_prolog_flag(min_integer, Min),
+    current_prolog_flag(max_integer, Max),    
+    check(Tree, Min, Max).
 
-isSearchTree(tr(X, L, R)) :-
-    isSearchTree_(L, X, left),
-    isSearchTree_(R, X, right).
-
-isSearchTree_(nil, _, _).
-isSearchTree_(tr(X, L, R), PREV, DIR) :-
-    DIR = left,
-    PREV > X,
-    isSearchTree_(L, X, left),
-    isSearchTree_(R, X, right).
-
-isSearchTree_(tr(X, L, R), PREV, DIR) :-
-    DIR = right,
-    PREV < X,
-    isSearchTree_(L, X, left),
-    isSearchTree_(R, X, right).
+check(nil, _, _).
+check(tr(E, L, R), Min, Max) :-
+    E > Min,
+    E < Max,
+    check(L, Min, E),
+    check(R, E, Max). 
 
